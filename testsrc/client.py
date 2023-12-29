@@ -1,9 +1,15 @@
-import pygame
-import socket
-import sys
-import gameUtils
+# Python client
+# written on 29.12.2023 on Chaos Communication Congress 37c3
+import sys, pygame, gameUtils, socket
 
-hostname = "151.217.116.19"
+if len(sys.argv) <= 2 or sys.argv[1] == "--help":
+    print("Syntax: python client.py <server ip> <port>")
+    exit()
+    
+hostname = sys.argv[1]
+port = int(sys.argv[2])
+
+#hostname = "151.217.116.19"
 #hostname = "localhost"
 #hostname = "151.217.96.247"
 velocity = 3
@@ -11,7 +17,7 @@ velocity = 3
 # connect to server with specified hostname
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
-    client.connect((hostname, 5555)) # using port 55555
+    client.connect((hostname, port))
     pos = client.recv(2048).decode().split(",")
     startPos = (int(pos[0]),int(pos[1])) # get start position on first connection
 except: # if no connection just quit
