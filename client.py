@@ -17,6 +17,8 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
+speed = 3 # speed for lemon moving
+
 
 class Player:
     def __init__(self,x,y):
@@ -56,13 +58,13 @@ while run:
 
     keys = gameUtils.getKeys()
     if keys["w"]:
-        players[0].y -= 1
+        players[0].y -= speed
     if keys["a"]:
-        players[0].x -= 1
+        players[0].x -= speed
     if keys["s"]:
-        players[0].y += 1
+        players[0].y += speed
     if keys["d"]:
-        players[0].x += 1
+        players[0].x += speed
         
     render()
 
