@@ -1,12 +1,12 @@
 import pygame
 import socket
 import sys
+import gameUtils
 
 hostname = "151.217.116.19"
+#hostname = "localhost"
+#hostname = "151.217.96.247"
 velocity = 3
-
-# create Pygame Window
-win = pygame.display.set_mode((500, 500)) # width / height
 
 # connect to server with specified hostname
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,6 +19,11 @@ except: # if no connection just quit
     sys.exit()
 
 
+# create Pygame Window
+win = pygame.display.set_mode((500, 500)) # width / height
+lemonPic = gameUtils.loadIMG("../img/Lemon.png", 128) # width 128
+
+
 class Player():
     def __init__(self, x, y, color):
         self.x = x
@@ -27,6 +32,7 @@ class Player():
     def show(self):
         # just draw rectangle 
         pygame.draw.rect(win, (self.color), (self.x,self.y,50,50))
+        win.blit(lemonPic, (self.x,self.y))
 
 
 p = Player(startPos[0],startPos[1],(0,0,255)) # make own player blue
@@ -63,6 +69,6 @@ while run:
     p.show()
     p2.show()
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(30) # for 30 fps
 
 pygame.quit()
