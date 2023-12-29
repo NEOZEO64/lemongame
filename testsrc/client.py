@@ -43,7 +43,6 @@ class Player():
 
 
 p = Player(startPos[0],startPos[1],(0,0,255)) # make own player blue
-otherPlayers = []
 p2 = Player(0,0,(255,0,0)) # other player is red
 clock = pygame.time.Clock()
 run = True
@@ -68,7 +67,6 @@ while run:
     try:
         client.send(str.encode("{},{}".format(p.x, p.y))) # send client position...
         response = client.recv(2048).decode().split(",") # to get server response..
-
         (p2.x, p2.y) = (int(response[0]), int(response[1])) # and update player 2 position
     except socket.error as e:
         print(e)
