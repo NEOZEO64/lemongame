@@ -23,7 +23,7 @@ speed = 3 # speed for lemon moving
 
 
 def getRandomID():
-    return str(random.randrage(1000,10000))
+    return str(random.randrange(1000,10000))
 
 class Player:
     def __init__(self,x,y,id):
