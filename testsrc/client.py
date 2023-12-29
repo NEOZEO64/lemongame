@@ -1,85 +1,73 @@
 import pygame
-from network import Network
+import socket
+import sys
 
-width = 500
-height = 500
-win = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Client")
+hostname = "151.217.116.19"
 
-clientNumber = 0
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+try:
+    client.connect((hostname, 5555)) # using port 55555
+    pos = client.recv(2048).decode().split(",")
+    startPos = (int(pos[0]),int(pos[1]))
+except:
+    print("No connection")
+    sys.exit()
 
+win = pygame.display.set_mode((500, 500)) # width / height
+
+############################
+# Client Info
+
+velocity = 3
 
 class Player():
-    def __init__(self, x, y, width, height, color):
+    def __init__(self, x, y, color):
         self.x = x
         self.y = y
-        self.width = width
-        self.height = height
         self.color = color
-        self.rect = (x,y,width,height)
-        self.vel = 3
-
-    def draw(self, win):
-        pygame.draw.rect(win, self.color, self.rect)
-
-    def move(self):
-        keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_LEFT]:
-            self.x -= self.vel
-
-        if keys[pygame.K_RIGHT]:
-            self.x += self.vel
-
-        if keys[pygame.K_UP]:
-            self.y -= self.vel
-
-        if keys[pygame.K_DOWN]:
-            self.y += self.vel
-
-        self.update()
-
-    def update(self):
-        self.rect = (self.x, self.y, self.width, self.height)
+    def show(self):
+        pygame.draw.rect(win, (self.color), (self.x,self.y,50,50))
 
 
-def read_pos(str):
-    str = str.split(",")
-    return int(str[0]), int(str[1])
+p = Player(startPos[0],startPos[1],(0,0,255)) # make own player blue
+p2 = Player(0,0,(255,0,0)) # other player is red
+clock = pygame.time.Clock()
+run = True
+
+while run:
+    # OTHER PLAYERS
+    try:
+        client.send(str.encode("{},{}".format(p.x, p.y))) # send client position...
+        response = client.recv(2048).decode().split(",") # to get server response..
+        (p2.x, p2.y) = (int(response[0]), int(response[1])) # and update player 2 position
+    except socket.error as e:
+        print(e)
+
+    # EVENTS
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_LEFT]:
+        p.x -= velocity
+
+    if keys[pygame.K_RIGHT]:
+        p.x += velocity
+
+    if keys[pygame.K_UP]:
+        p.y -= velocity
+
+    if keys[pygame.K_DOWN]:
+        p.y += velocity
 
 
-def make_pos(tup):
-    return str(tup[0]) + "," + str(tup[1])
-
-
-def redrawWindow(win,player, player2):
+    # RENDER
     win.fill((255,255,255))
-    player.draw(win)
-    player2.draw(win)
+    p.show()
+    p2.show()
     pygame.display.update()
+    clock.tick(60)
 
-
-def main():
-    run = True
-    n = Network()
-    startPos = read_pos(n.getPos())
-    p = Player(startPos[0],startPos[1],100,100,(0,255,0))
-    p2 = Player(0,0,100,100,(255,0,0))
-    clock = pygame.time.Clock()
-
-    while run:
-        clock.tick(60)
-        p2Pos = read_pos(n.send(make_pos((p.x, p.y))))
-        p2.x = p2Pos[0]
-        p2.y = p2Pos[1]
-        p2.update()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                pygame.quit()
-
-        p.move()
-        redrawWindow(win, p, p2)
-
-main()
+pygame.quit()
