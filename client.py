@@ -26,17 +26,17 @@ def getRandomID():
     return str(random.randrage(1000,10000))
 
 class Player:
-    def __init__(self,x,y):
+    def __init__(self,x,y,id):
         self.x = x
         self.y = y
-        self.id = getRandomID()
+        self.id = id
     def show(self):
         # draw lemon!
         windowSurface.blit(lemonPic, (self.x,self.y))
 
 players = []
 
-players.append(Player(50,50))
+players.append(Player(50,50, getRandomID()))
 
 
 
