@@ -2,6 +2,14 @@ import pygame
 from pygame.locals import *
 import gameUtils
 import random
+import socket
+
+hostname = '151.217.116.14'
+
+
+s = socket.socket() # Create a socket object 
+s.connect(hostname, 7127) # port 7127
+
 
 pygame.init()
 windowSurface = pygame.display.set_mode((500, 500)) # create window
@@ -10,7 +18,6 @@ lemonPic = gameUtils.loadIMG("./Lemon.png", 128) # width 128
 
 fps = 15
 fpsClock = pygame.time.Clock()
-
 
 
 BLACK = (0, 0, 0)
@@ -36,6 +43,7 @@ class Player:
 
 players = []
 
+# player 0 is always the local player / client
 players.append(Player(50,50, getRandomID()))
 
 
@@ -71,6 +79,12 @@ while run:
     if keys["d"]:
         players[0].x += speed
         
+    
+    msg = s.recv(1024).decode()  # receive data from the server and decoding to get the string.
+
     render()
 
     fpsClock.tick(fps)
+
+
+s.close()
