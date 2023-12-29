@@ -1,0 +1,15 @@
+[project]
+name = "lemongame"
+version = "0.0.1"
+description = "minimal python application with server and client for multiplayer demo"
+authors = [
+    {name = "NEOZEO64", email = "NEOZEO64@pm.me"},
+    {name = "tippfehlr", email = "tippfehlr@tippfehlr.eu"}
+]
+dependencies = [
+    "pygame>=2.5.2",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "The Unlicense"}
+
