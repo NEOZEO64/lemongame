@@ -2,13 +2,23 @@ import socket
 from _thread import *
 import sys
 
-server = "1.2.3.5"
-port = 5555
+# server = "151.217.96.247"
+# server = "127.0.0.1"
+# port = 5555
+
+if len(sys.argv) <= 1 or sys.argv[1] == "--help":
+    print("Syntax: python server.py <server ip> <port>")
+    exit()
+    
+ip = sys.argv[1]
+port = int(sys.argv[2])
+
+print("Server: {}\nPort: {}".format(ip, port))
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
-    s.bind((server, port))
+    s.bind((ip, port))
 except socket.error as e:
     str(e)
 
