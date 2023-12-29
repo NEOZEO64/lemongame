@@ -1,18 +1,19 @@
 # Python client
 # written on 29.12.2023 on Chaos Communication Congress 37c3
+
+
+
 import sys, pygame, gameUtils, socket
 
 if len(sys.argv) <= 2 or sys.argv[1] == "--help":
     print("Syntax: python client.py <server ip> <port>")
     exit()
-    
 hostname = sys.argv[1]
 port = int(sys.argv[2])
 
-#hostname = "151.217.116.19"
-#hostname = "localhost"
-#hostname = "151.217.96.247"
+# Game configs
 velocity = 3
+fps = 30 # frames per second
 
 # connect to server with specified hostname
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -37,11 +38,12 @@ class Player():
         self.color = color
     def show(self):
         # just draw rectangle 
-        pygame.draw.rect(win, (self.color), (self.x,self.y,50,50))
+        #pygame.draw.rect(win, (self.color), (self.x,self.y,50,50))
         win.blit(lemonPic, (self.x,self.y))
 
 
 p = Player(startPos[0],startPos[1],(0,0,255)) # make own player blue
+otherPlayers = []
 p2 = Player(0,0,(255,0,0)) # other player is red
 clock = pygame.time.Clock()
 run = True
@@ -66,6 +68,7 @@ while run:
     try:
         client.send(str.encode("{},{}".format(p.x, p.y))) # send client position...
         response = client.recv(2048).decode().split(",") # to get server response..
+
         (p2.x, p2.y) = (int(response[0]), int(response[1])) # and update player 2 position
     except socket.error as e:
         print(e)
@@ -75,6 +78,6 @@ while run:
     p.show()
     p2.show()
     pygame.display.update()
-    clock.tick(30) # for 30 fps
+    clock.tick(fps) # for 30 fps
 
 pygame.quit()
