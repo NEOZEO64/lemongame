@@ -1,4 +1,4 @@
-![](./Lemon.png)
+![](./img/Lemon.png)
 
 # Lemon Game
 
