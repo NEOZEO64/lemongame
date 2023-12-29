@@ -1,90 +1,81 @@
-import pygame
-from pygame.locals import *
-import gameUtils
-import random
-import socket
-
-hostname = '151.217.116.14'
+# Python client
+# written on 29.12.2023 on Chaos Communication Congress 37c3
 
 
-s = socket.socket() # Create a socket object 
-s.connect(hostname, 7127) # port 7127
+
+import sys, pygame, gameUtils, socket
+
+if len(sys.argv) <= 2 or sys.argv[1] == "--help":
+    print("Syntax: python client.py <server ip> <port>")
+    exit()
+hostname = sys.argv[1]
+port = int(sys.argv[2])
+
+# Game configs
+velocity = 3
+fps = 30 # frames per second
+
+# connect to server with specified hostname
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+try:
+    client.connect((hostname, port))
+    pos = client.recv(2048).decode().split(",")
+    startPos = (int(pos[0]),int(pos[1])) # get start position on first connection
+except: # if no connection just quit
+    print("No connection")
+    sys.exit()
 
 
-pygame.init()
-windowSurface = pygame.display.set_mode((500, 500)) # create window
-
-lemonPic = gameUtils.loadIMG("./Lemon.png", 128) # width 128
-
-fps = 15
-fpsClock = pygame.time.Clock()
+# create Pygame Window
+win = pygame.display.set_mode((500, 500)) # width / height
+lemonPic = gameUtils.loadIMG("../img/Lemon.png", 128) # width 128
 
 
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-
-speed = 3 # speed for lemon moving
-
-
-def getRandomID():
-    return str(random.randrange(1000,10000))
-
-class Player:
-    def __init__(self,x,y,id):
+class Player():
+    def __init__(self, x, y, color):
         self.x = x
         self.y = y
-        self.id = id
+        self.color = color
     def show(self):
-        # draw lemon!
-        windowSurface.blit(lemonPic, (self.x,self.y))
-
-players = []
-
-# player 0 is always the local player / client
-players.append(Player(50,50, getRandomID()))
+        # just draw rectangle 
+        #pygame.draw.rect(win, (self.color), (self.x,self.y,50,50))
+        win.blit(lemonPic, (self.x,self.y))
 
 
-
-def render():
-    windowSurface.fill(RED)
-
-    for i in range(len(players)):
-        players[i].show()
-
-    # put buffer to screen
-    pygame.display.update()
-
-
-
-# Spiel-Schleife
+p = Player(startPos[0],startPos[1],(0,0,255)) # make own player blue
+p2 = Player(0,0,(255,0,0)) # other player is red
+clock = pygame.time.Clock()
 run = True
 
 while run:
-    # Informationen (Events) über das Pygame-Fenster abfragen
-    for event in pygame.event.get():
-        # Wenn die Information gerade ein beenden-Event ist:
-        if event.type == QUIT:
+    # EVENTS
+    for event in pygame.event.get(): 
+        if event.type == pygame.QUIT: # check if window should be closed
             run = False
 
-    keys = gameUtils.getKeys()
-    if keys["w"]:
-        players[0].y -= speed
-    if keys["a"]:
-        players[0].x -= speed
-    if keys["s"]:
-        players[0].y += speed
-    if keys["d"]:
-        players[0].x += speed
-        
-    
-    msg = s.recv(1024).decode()  # receive data from the server and decoding to get the string.
+    keys = pygame.key.get_pressed() # move player client on key presses
+    if keys[pygame.K_LEFT]:
+        p.x -= velocity
+    if keys[pygame.K_RIGHT]:
+        p.x += velocity
+    if keys[pygame.K_UP]:
+        p.y -= velocity
+    if keys[pygame.K_DOWN]:
+        p.y += velocity
 
-    render()
+    # OTHER PLAYERS
+    try:
+        client.send(str.encode("{},{}".format(p.x, p.y))) # send client position...
+        response = client.recv(2048).decode().split(",") # to get server response..
+        (p2.x, p2.y) = (int(response[0]), int(response[1])) # and update player 2 position
+    except socket.error as e:
+        print(e)
 
-    fpsClock.tick(fps)
+    # RENDER
+    win.fill((255,255,255))
+    p.show()
+    p2.show()
+    pygame.display.update()
+    clock.tick(fps) # for 30 fps
 
-
-s.close()
+pygame.quit()

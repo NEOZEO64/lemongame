@@ -1,22 +1,68 @@
 import socket
- 
-# next create a socket object 
-s = socket.socket()
-print ("Socket successfully created")
- 
+from _thread import *
+import sys
 
-port = 7127
-s.bind(('', port))
- 
-# put the socket into listening mode 
-s.listen(5)
-print("socket is listening")
- 
+
+if len(sys.argv) <= 1 or sys.argv[1] == "--help":
+    print("Syntax: python server.py <server ip> <port>")
+    exit()
+    
+ip = sys.argv[1]
+port = int(sys.argv[2])
+
+print("Server: {}\nPort: {}".format(ip, port))
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+try:
+    s.bind((ip, port))
+except socket.error as e:
+    str(e)
+
+s.listen(2)
+print("Waiting for a connection, Server Started")
+
+def read_pos(str):
+    str = str.split(",")
+    return int(str[0]), int(str[1])
+
+
+def make_pos(tup):
+    return str(tup[0]) + "," + str(tup[1])
+
+pos = [(0,0),(100,100)]
+
+def threaded_client(conn, player):
+    conn.send(str.encode(make_pos(pos[player])))
+    reply = ""
+    while True:
+        try:
+            data = read_pos(conn.recv(2048).decode())
+            pos[player] = data
+
+            if not data:
+                break
+            else:
+                if player == 1:
+                    reply = pos[0]
+                else:
+                    reply = pos[1]
+
+                print("Received: ", data)
+                print("Sending : ", reply)
+
+            conn.sendall(str.encode(make_pos(reply)))
+        except:
+            break
+    global player_count
+    player_count -= 1
+    print("Lost connection, {} remaining player(s)".format(player_count))
+    conn.close()
+
+player_count = 0
 while True:
-    c, addr = s.accept() # Establish connection with client. 
+    conn, addr = s.accept()
+    print("Connected to:", addr)
 
-    c.send('Thank you for connecting'.encode())  # send a thank you message to the client. encoding to send byte type. 
-    c.close()
-
-    print('Got connection from', addr )
-    break
+    start_new_thread(threaded_client, (conn, player_count))
+    player_count += 1
