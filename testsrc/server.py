@@ -2,9 +2,6 @@ import socket
 from _thread import *
 import sys
 
-# server = "151.217.96.247"
-# server = "127.0.0.1"
-# port = 5555
 
 if len(sys.argv) <= 1 or sys.argv[1] == "--help":
     print("Syntax: python server.py <server ip> <port>")
@@ -44,7 +41,6 @@ def threaded_client(conn, player):
             pos[player] = data
 
             if not data:
-                print("Disconnected")
                 break
             else:
                 if player == 1:
@@ -58,14 +54,15 @@ def threaded_client(conn, player):
             conn.sendall(str.encode(make_pos(reply)))
         except:
             break
-
-    print("Lost connection")
+    global player_count
+    player_count -= 1
+    print("Lost connection, {} remaining player(s)".format(player_count))
     conn.close()
 
-currentPlayer = 0
+player_count = 0
 while True:
     conn, addr = s.accept()
     print("Connected to:", addr)
 
-    start_new_thread(threaded_client, (conn, currentPlayer))
-    currentPlayer += 1
+    start_new_thread(threaded_client, (conn, player_count))
+    player_count += 1
