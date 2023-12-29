@@ -7,6 +7,10 @@ windowSurface = pygame.display.set_mode((500, 500)) # create window
 
 lemonPic = gameUtils.loadIMG("./Lemon.png", 128) # width 128
 
+fps = 15
+fpsClock = pygame.time.Clock()
+
+
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -61,3 +65,5 @@ while run:
         players[0].x += 1
         
     render()
+
+    fpsClock.tick(fps)
