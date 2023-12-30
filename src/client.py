@@ -38,14 +38,16 @@ def getOtherPlayers():
 
     # connect to server with specified hostname
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.settimeout(3)
     try:
         client.connect((hostname, port))
+        
         client.send(str.encode("{},{}".format(int(x), int(y))))
-        print("Message on join:", client.recv(2048).decode())
+        print("Joined, message:", client.recv(2048).decode())
     except: # if no connection just quit
         print("Connection refused")
         run = False
-    print("Joined server")
+    
 
     while run:
         try: 
