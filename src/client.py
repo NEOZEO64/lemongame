@@ -10,7 +10,12 @@ hostname = sys.argv[1]
 port = int(sys.argv[2])
 
 # game configs
-velocity = 3
+#velocity = 3
+velX = 0
+velY = 0
+acceleration = 1
+friction = 0.95
+
 fps = 30 # frames per second
 width = 500
 height = 500
@@ -35,17 +40,16 @@ def getOtherPlayers():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         client.connect((hostname, port))
-        client.send(str.encode("{},{}".format(x, y)))
+        client.send(str.encode("{},{}".format(int(x), int(y))))
         print("Message on join:", client.recv(2048).decode())
     except: # if no connection just quit
         print("Connection refused")
-        sys.exit()
+        run = False
     print("Joined server")
 
     while run:
-        try:
-            
-            client.send(str.encode("{},{}".format(x, y))) # send client position...
+        try: 
+            client.send(str.encode("{},{}".format(int(x), int(y)))) # send client position...
             msg = client.recv(2048).decode() # to get server response
             otherPlayers = []
             if msg != "you are alone": # if there are players
@@ -54,7 +58,6 @@ def getOtherPlayers():
                     for tup in coordsTup:
                         tup = tup.split(",")
                         otherPlayers.append((int(tup[0]), int(tup[1])))
-            
         except socket.error as e:
             print(e)
             run = False
@@ -67,13 +70,19 @@ while run:
     pygame.event.get()
     keys = pygame.key.get_pressed() 
     if keys[pygame.K_LEFT]:
-        x -= velocity
+        velX -= acceleration
     if keys[pygame.K_RIGHT]:
-        x += velocity
+        velX += acceleration
     if keys[pygame.K_UP]:
-        y -= velocity
+        velY -= acceleration
     if keys[pygame.K_DOWN]:
-        y += velocity
+        velY += acceleration
+
+    velX *= friction
+    velY *= friction
+
+    x += velX
+    y += velY
 
     # quit game by move out of window
     if x < -playerWidth or x > width or y < -playerHeight or y > height:
