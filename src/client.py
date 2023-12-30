@@ -34,7 +34,7 @@ print("Joined server")
 
 # create pygame window
 win = pygame.display.set_mode((width, height)) # width / height
-lemonPic = gameUtils.loadIMG("../img/Lemon.png", playerWidth, playerHeight) # width 128  
+lemonPic = gameUtils.loadIMG("../img/Lemon.png", playerWidth, playerHeight)
 clock = pygame.time.Clock()
 run = True
 
@@ -62,12 +62,14 @@ while run:
     try:
         client.send(str.encode("{},{}".format(x, y))) # send client position...
         msg = client.recv(2048).decode() # to get server response
+        
         if msg != "no!": # if there are players
             coordsTup = msg[:-1].split(";") # then split player coordinates
             if coordsTup != ['']: 
                 for tup in coordsTup:
+                    print(tup)
                     tup = tup.split(",")
-                    win.blit(lemonPic, (int(tup[0], int(tup[1]))))
+                    win.blit(lemonPic, (int(tup[0]), int(tup[1])))
     except socket.error as e:
         print(e)
 
