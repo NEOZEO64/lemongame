@@ -25,12 +25,9 @@ player_positions = []
 def threaded_client(conn, player):
     global player_positions
 
-    while len(player_positions) <= player:
-        player_positions.append(None)
-    
     while True:
         rx = conn.recv(2048).decode()
-        
+
         if rx:
             if print_comms:
                 print("[Client {}] RX: \"{}\"".format(player, rx))
@@ -52,14 +49,14 @@ def threaded_client(conn, player):
         else:
             break
     global player_count
-    player_count -= 1
+    # player_count -= 1
     player_positions[player] = None
     print("[Player {}] Lost connection, {} remaining player(s)".format(player, player_count))
     conn.close()
 
 def print_data():
     while True:
-        print("players: {}, positions: {}".format(player_count, player_positions))
+        print(player_positions)
         time.sleep(0.5)
 
 player_count = 0
@@ -69,6 +66,9 @@ if print_positions:
 while True:
     conn, addr = s.accept()
     print("Connected to ", addr)
+
+    while len(player_positions) <= player_count:
+        player_positions.append(None)
 
     start_new_thread(threaded_client, (conn, player_count))
     player_count += 1
