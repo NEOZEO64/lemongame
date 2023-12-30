@@ -44,16 +44,17 @@ def getOtherPlayers():
 
     while run:
         try:
-            otherPlayers = []
+            
             client.send(str.encode("{},{}".format(x, y))) # send client position...
             msg = client.recv(2048).decode() # to get server response
-            
+            otherPlayers = []
             if msg != "you are alone": # if there are players
                 coordsTup = msg[:-1].split(";") # then split player coordinates
                 if coordsTup != ['']: 
                     for tup in coordsTup:
                         tup = tup.split(",")
                         otherPlayers.append((int(tup[0]), int(tup[1])))
+            
         except socket.error as e:
             print(e)
             run = False
