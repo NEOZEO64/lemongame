@@ -1,7 +1,10 @@
 import socket
+import time
 from _thread import *
 import sys
 
+print_comms = False
+print_positions = True
 
 if len(sys.argv) <= 1 or sys.argv[1] == "--help":
     print("Syntax: python server.py <server ip> <port>")
@@ -29,7 +32,8 @@ def threaded_client(conn, player):
         rx = conn.recv(2048).decode()
         
         if rx:
-            print("[Client {}] RX: \"{}\"".format(player, rx))
+            if print_comms:
+                print("[Client {}] RX: \"{}\"".format(player, rx))
             player_pos = rx.split(",")
         
             player_positions[player] = (int(player_pos[0]), int(player_pos[1]))
@@ -43,7 +47,8 @@ def threaded_client(conn, player):
                 reply = "you are alone"
 
             conn.sendall(str.encode(reply))
-            print("[Client {}] TX: \"{}\"".format(player, reply))
+            if print_comms:
+                print("[Client {}] TX: \"{}\"".format(player, reply))
         else:
             break
     global player_count
@@ -52,7 +57,15 @@ def threaded_client(conn, player):
     print("[Player {}] Lost connection, {} remaining player(s)".format(player, player_count))
     conn.close()
 
+def print_data():
+    while True:
+        print("players: {}, positions: {}".format(player_count, player_positions))
+        time.sleep(0.5)
+
 player_count = 0
+
+if print_positions:
+    start_new_thread(print_data, ())
 while True:
     conn, addr = s.accept()
     print("Connected to ", addr)
