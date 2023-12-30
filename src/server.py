@@ -19,7 +19,6 @@ s.bind((ip, port))
 s.listen(2)
 print("Server started, waiting for a connection")
 
-# player_positions[player_id] = (X, Y)
 player_positions = []
 
 def threaded_client(conn, player):
@@ -31,14 +30,13 @@ def threaded_client(conn, player):
         if rx:
             if print_comms:
                 print("[Client {}] RX: \"{}\"".format(player, rx))
-            player_pos = rx.split(",")
         
-            player_positions[player] = (int(player_pos[0]), int(player_pos[1]))
+            player_positions[player] = rx
         
             reply = ""
             for (i, pos) in enumerate(player_positions):
                 if not i == player and pos != None:
-                    reply += "{},{};".format(pos[0], pos[1])
+                    reply += pos + ";"
 
             if reply == "":
                 reply = "you are alone"
