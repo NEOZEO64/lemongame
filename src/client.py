@@ -1,6 +1,6 @@
 # Python client
 # written on 29.12.2023 on Chaos Communication Congress 37c3
-import sys, socket, pygame, gameUtils
+import sys, socket, pygame, gameUtils, random
 
 # try connecting to server, otherwise quit
 if len(sys.argv) <= 2 or sys.argv[1] == "--help":
@@ -17,15 +17,20 @@ height = 500
 playerWidth = 64
 playerHeight = 64
 
+x = random.randrange(0, width-playerWidth)  # start position
+y = random.randrange(0, height-playerHeight)
+
 # connect to server with specified hostname
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
     client.connect((hostname, port))
-    pos = client.recv(2048).decode().split(",")
-    (x,y) = (int(pos[0]), int(pos[1])) # get start position on connection
+    print("Start socket")
+    client.send(str.encode("{},{}".format(x, y)))
+    print("Message on join:", client.recv(2048).decode())
 except: # if no connection just quit
     print("No connection")
     sys.exit()
+print("Joined server")
 
 # create pygame window
 win = pygame.display.set_mode((width, height)) # width / height
@@ -46,20 +51,23 @@ while run:
     if keys[pygame.K_DOWN]:
         y += velocity
 
-    # quit game by going out of window
+    # quit game by move out of window
     if x < -playerWidth or x > width or y < -playerHeight or y > height:
         run = False
 
-    win.fill((255,255,255))
-    win.blit(lemonPic, (x,y))
+    win.fill((255,100,100)) # draw background white
+    win.blit(lemonPic, (x,y)) # draw player
 
     # managing other players
     try:
         client.send(str.encode("{},{}".format(x, y))) # send client position...
-        coordsTup = client.recv(2048).decode().split(";") # to get server response
-        for tup in coordsTup:
-            tup = tup.split(",")
-            win.blit(lemonPic, (int(tup[0], int(tup[1]))))
+        msg = client.recv(2048).decode() # to get server response
+        if msg != "no!": # if there are players
+            coordsTup = msg[:-1].split(";") # then split player coordinates
+            if coordsTup != ['']: 
+                for tup in coordsTup:
+                    tup = tup.split(",")
+                    win.blit(lemonPic, (int(tup[0], int(tup[1]))))
     except socket.error as e:
         print(e)
 
@@ -67,4 +75,3 @@ while run:
     clock.tick(fps) # for 30 fps
 
 pygame.quit()
-socket.close()
