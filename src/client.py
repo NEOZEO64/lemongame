@@ -9,6 +9,8 @@ if len(sys.argv) <= 2 or sys.argv[1] == "--help":
 hostname = sys.argv[1]
 port = int(sys.argv[2])
 
+print("Connecting to {}:{}".format(hostname, port))
+
 # game configs
 #velocity = 3
 velX = 0
@@ -101,6 +103,8 @@ def getOtherPlayers():
                         nowPlayers.append((int(tup[0]), int(tup[1])))
             for i in range(len(nowPlayers)-len(otherPlayers)):
                 Explosion.objs.append(Explosion(nowPlayers[i][0]+playerWidth/2,nowPlayers[i][1]+playerHeight/2,0)) # 0 for type
+            if len(nowPlayers) != len(otherPlayers):
+                print(otherPlayers)
             otherPlayers = nowPlayers
         except socket.error as e:
             print(e)
