@@ -9,57 +9,53 @@ if len(sys.argv) <= 1 or sys.argv[1] == "--help":
     
 ip = sys.argv[1]
 port = int(sys.argv[2])
-
 print("Server: {}\nPort: {}".format(ip, port))
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-try:
-    s.bind((ip, port))
-except socket.error as e:
-    str(e)
-
+s.bind((ip, port))
 s.listen(2)
-print("Waiting for a connection, Server Started")
+print("Server started, waiting for a connection")
 
 # player_positions[player_id] = (X, Y)
 player_positions = []
 
 def threaded_client(conn, player):
     global player_positions
+
+    while len(player_positions) <= player:
+        player_positions.append(None)
     
     while True:
-        raw = conn.recv(2048).decode()
+        rx = conn.recv(2048).decode()
         
-        if raw:
-            print("[Client {}]: Received: {}".format(player, raw))
-            data = raw.split(",")
-
-            while len(player_positions) <= player:
-                player_positions.append(None)
+        if rx:
+            print("[Client {}] RX: \"{}\"".format(player, rx))
+            player_pos = rx.split(",")
         
-            player_positions[player] = (int(data[0]), int(data[1]))
-            print("[Client {}]: Position: X{} Y{}".format(player, player_positions[player][0], player_positions[player][1]))
+            player_positions[player] = (int(player_pos[0]), int(player_pos[1]))
         
             reply = ""
             for (i, pos) in enumerate(player_positions):
-                if not i == player:
+                if not i == player and pos != None:
                     reply += "{},{};".format(pos[0], pos[1])
-            print("[Client {}]: Sending: {}".format(player, reply))
+
             if reply == "":
-                conn.sendall(str.encode("no!"))
-            else:
-                conn.sendall(str.encode(reply))
+                reply = "you are alone"
+
+            conn.sendall(str.encode(reply))
+            print("[Client {}] TX: \"{}\"".format(player, reply))
+        else:
+            break
     global player_count
     player_count -= 1
     player_positions[player] = None
-    print("Lost connection, {} remaining player(s)".format(player_count))
+    print("[Player {}] Lost connection, {} remaining player(s)".format(player, player_count))
     conn.close()
 
 player_count = 0
 while True:
     conn, addr = s.accept()
-    print("Connected to:", addr)
+    print("Connected to ", addr)
 
     start_new_thread(threaded_client, (conn, player_count))
     player_count += 1
