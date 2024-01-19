@@ -24,6 +24,23 @@ height = 500
 playerWidth = 64
 playerHeight = 64
 
+
+'''
+Aliexpress SNES Game Controller Mapping
+D-Pad up:   Axis 1 value = -1
+D-Pad down: Axis 1 value = +1
+D-Pad left: Axis 0 value = -1
+D-Pad right:Axis 0 value = +1
+A : Button 1
+B : Button 2
+X : Button 0
+Y : Button 3
+Select: Button 8
+Start: Button 9
+Shoulder L: Button 4
+Shoulder R: Button 5
+'''
+
 x = random.randrange(0, width-playerWidth)  # start position
 y = random.randrange(0, height-playerHeight)
 
@@ -113,18 +130,29 @@ def getOtherPlayers():
 otherPlayerThread = threading.Thread(target=getOtherPlayers)
 otherPlayerThread.start()
 
+joystick = 0
+
 while run:
     # move player client on key presses
-    pygame.event.get()
+    for event in pygame.event.get():
+        # Joystick management
+        if event.type == pygame.JOYDEVICEADDED:
+            joystick = pygame.joystick.Joystick(event.device_index)
+        if event.type == pygame.JOYDEVICEREMOVED:
+            joystick = 0
+
     keys = pygame.key.get_pressed() 
-    if keys[pygame.K_LEFT]:
+    
+
+    if keys[pygame.K_LEFT] or (joystick != 0 and joystick.get_axis(0) < -0.9):
         velX -= acceleration
-    if keys[pygame.K_RIGHT]:
+    if keys[pygame.K_RIGHT] or (joystick != 0 and joystick.get_axis(0) >= 0.9):
         velX += acceleration
-    if keys[pygame.K_UP]:
+    if keys[pygame.K_UP] or (joystick != 0 and joystick.get_axis(1) < -0.9):
         velY -= acceleration
-    if keys[pygame.K_DOWN]:
+    if keys[pygame.K_DOWN]  or (joystick != 0 and joystick.get_axis(1) >= 0.9):
         velY += acceleration
+
 
     velX *= friction
     velY *= friction
@@ -133,7 +161,6 @@ while run:
     y += velY
 
     
-
     # quit game by move out of window
     if x < -playerWidth or x > width or y < -playerHeight or y > height:
         run = False
